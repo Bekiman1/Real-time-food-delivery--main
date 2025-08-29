@@ -1,9 +1,7 @@
 // src/api/restaurantApi.js
 export const fetchNearbyRestaurants = async (lat, lng) => {
   const url =
-    lat && lng
-      ? `https://real-time-food-delivery.onrender.com/api/delivery/restaurants?lat=${lat}&lng=${lng}`
-      : "https://real-time-food-delivery.onrender.com/api/delivery/restaurants";
+    "https://real-time-food-delivery.onrender.com/api/delivery/restaurants";
 
   const response = await fetch(url, {
     method: "GET",
