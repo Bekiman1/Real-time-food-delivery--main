@@ -3,7 +3,7 @@ import axios from "axios";
 
 // ✅ Axios instance with cookies enabled
 const api = axios.create({
-  baseURL: "http://localhost:5000/api/delivery",
+  baseURL: "https://real-time-food-delivery.onrender.com/api/delivery",
   withCredentials: true, // important for HttpOnly cookies
 });
 
