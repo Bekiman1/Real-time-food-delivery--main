@@ -1,10 +1,9 @@
 import { create } from "zustand";
 import axios from "axios";
-import BASE_URL from "../../api/customer/authApi"; // Import the base URL
 
 // ✅ Axios instance with cookies enabled
 const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: "http://localhost:5000/api/delivery",
   withCredentials: true, // important for HttpOnly cookies
 });
 

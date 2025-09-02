@@ -110,7 +110,7 @@ const CheckoutPage = () => {
           </h2>
           <div className="group relative bg-gray-100/80 border border-gray-200/80 rounded-xl p-3 hover:bg-yellow-100/60 transition-all duration-300">
             <MapContainer
-              center={{ lat: 8.987947, lng: 38.79122 }}
+              center={{ lat: 51.505, lng: -0.09 }}
               zoom={13}
               scrollWheelZoom={false}
               style={{ height: "400px" }}

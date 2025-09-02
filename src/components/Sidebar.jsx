@@ -20,6 +20,7 @@ const Sidebar = () => {
     { label: "Orders", icon: FiShoppingBag, path: "/order-history" },
     { label: "Promos", icon: FiTag, path: "/promos" },
     { label: "Setting", icon: FiSettings, path: "/settings" },
+    { label: "Admin Dashboard", icon: FiShield, path: "/admin" },
   ];
 
   return (
