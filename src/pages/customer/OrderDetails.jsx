@@ -7,7 +7,7 @@ const OrderDetails = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/orders/${id}`, {
+    fetch(`https://real-time-food-delivery.onrender.com/api/orders/${id}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
@@ -29,19 +29,30 @@ const OrderDetails = () => {
   return (
     <div className="p-6">
       <h2 className="text-xl font-bold mb-4">Order #{order.id}</h2>
-      <p><strong>Restaurant:</strong> {order.restaurant}</p>
-      <p><strong>Status:</strong> {order.status}</p>
-      <p><strong>Items:</strong> {order.items.join(", ")}</p>
+      <p>
+        <strong>Restaurant:</strong> {order.restaurant}
+      </p>
+      <p>
+        <strong>Status:</strong> {order.status}
+      </p>
+      <p>
+        <strong>Items:</strong> {order.items.join(", ")}
+      </p>
 
       {/* Feedback Section */}
       <div className="mt-6 p-4 border rounded bg-gray-50">
         <h3 className="text-lg font-semibold">Feedback</h3>
         {order.feedback ? (
           <div>
-            <p><strong>Rating:</strong> ⭐ {order.feedback.rating}/5</p>
-            <p><strong>Comment:</strong> {order.feedback.text}</p>
+            <p>
+              <strong>Rating:</strong> ⭐ {order.feedback.rating}/5
+            </p>
+            <p>
+              <strong>Comment:</strong> {order.feedback.text}
+            </p>
             <p className="text-sm text-gray-500">
-              Submitted at: {new Date(order.feedback.submittedAt).toLocaleString()}
+              Submitted at:{" "}
+              {new Date(order.feedback.submittedAt).toLocaleString()}
             </p>
           </div>
         ) : (
@@ -50,5 +61,5 @@ const OrderDetails = () => {
       </div>
     </div>
   );
-}
+};
 export default OrderDetails;

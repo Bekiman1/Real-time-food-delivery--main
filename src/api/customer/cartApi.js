@@ -1,5 +1,5 @@
 const BASE_URL =
-  "https://real-time-food-delivery.onrender.com/api/delivery/customer/";
+  "https://real-time-food-delivery.onrender.com/api/delivery/customer";
 
 // Get cart
 export const fetchCart = async () => {
