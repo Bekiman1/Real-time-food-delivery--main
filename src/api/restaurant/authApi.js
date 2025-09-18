@@ -1,25 +1,72 @@
 import axios from "axios";
 
-const authApi = axios.create({
+const api = axios.create({
   baseURL: "https://real-time-food-delivery.onrender.com/api/delivery",
-  withCredentials: true, // send HTTP-only cookies automatically
+  withCredentials: true, // for HttpOnly cookies
 });
 
+// ✅ Centralized error handler
+const handleError = (err, defaultMsg) =>
+  err.response?.data?.message || err.message || defaultMsg || "Something went wrong";
+
+// ------------------- AUTH APIS -------------------
+
+// Login
 export const loginApi = async (email, password) => {
-  const res = await authApi.post("/auth/login", { email, password });
-  return res.data; // { data: user, token? }
+  try {
+    const res = await api.post("/auth/login", { email, password });
+    return { success: true, data: res.data.data };
+  } catch (err) {
+    return { success: false, message: handleError(err, "Login failed") };
+  }
 };
 
-export const signupApi = async (payload) => {
-  const res = await authApi.post("/restaurants/register", payload);
-  return res.data;
-};
-
-export const checkAuthApi = async () => {
-  const res = await authApi.get("/auth/refresh-token");
-  return res.data;
-};
-
+// Logout
 export const logoutApi = async () => {
-  await authApi.post("/auth/logout");
+  try {
+    await api.post("/auth/logout");
+    return { success: true };
+  } catch (err) {
+    return { success: false, message: handleError(err, "Logout failed") };
+  }
+};
+
+// Refresh session
+export const refreshTokenApi = async () => {
+  try {
+    const res = await api.post("/auth/refresh-token");
+    return { success: true, data: res.data.data };
+  } catch (err) {
+    return { success: false, message: handleError(err, "Session expired") };
+  }
+};
+
+// Signup Restaurant
+export const signupRestaurantApi = async (
+  email,
+  phone,
+  password,
+  name,
+  lng,
+  lat,
+  image
+) => {
+  try {
+    const payload = {
+      email: String(email),
+      phone: String(phone),
+      password: String(password),
+      name: String(name),
+      image: String(image),
+      location: {
+        type: "Point",
+        coordinates: [parseFloat(lng), parseFloat(lat)],
+      },
+    };
+
+    const res = await api.post("/restaurants/register", payload);
+    return { success: true, data: res.data.data, payload };
+  } catch (err) {
+    return { success: false, message: handleError(err, "Signup failed") };
+  }
 };

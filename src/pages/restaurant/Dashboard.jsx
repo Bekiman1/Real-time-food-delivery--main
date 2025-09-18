@@ -1,176 +1,121 @@
-import React, { useState, useEffect } from "react";
+// src/pages/restaurant/Dashboard.jsx
+import React, { useEffect } from "react";
 import Sidebar from "../../components/restaurant/Sidebar";
-import OrderStatus from "../../components/OrderStatus";
-import Graphs from "../../components/Graphs";
-import dummyOrders from "../../data/dummyOrders";
+import useOrderStore from "../../store/restaurant/restaurantorderStore";
 
 export default function Dashboard() {
-  const [orders, setOrders] = useState([]);
-  const [modalOrder, setModalOrder] = useState(null);
-  const [activeTab, setActiveTab] = useState("status");
+  const { orders, loading, error, fetchOrders, updateStatus, cancelOrder } =
+    useOrderStore();
 
   useEffect(() => {
-    const fetched = dummyOrders.map(order => ({
-      ...order,
-      total: order.items.reduce((sum, i) => sum + i.qty * i.price, 0)
-    }));
-    setOrders(fetched);
-  }, []);
-
-  const grouped = { pending: [], "in-progress": [], completed: [] };
-  orders.forEach(o => grouped[o.status].push(o));
+    fetchOrders();
+  }, [fetchOrders]);
 
   const formatBirr = (x) => "Br " + (x || 0).toLocaleString();
 
-  const updateStatus = (order, newStatus) => {
-    setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: newStatus } : o));
-    setModalOrder(null);
+  const nextStatuses = ["pending", "accepted", "preparing", "ready"];
+  const statusColors = {
+    pending: "bg-yellow-100 text-yellow-700 border-yellow-300",
+    accepted: "bg-blue-100 text-blue-700 border-blue-300",
+    preparing: "bg-purple-100 text-purple-700 border-purple-300",
+    ready: "bg-green-100 text-green-700 border-green-300",
+    delivered: "bg-green-200 text-green-800 border-green-400",
+    picked: "bg-indigo-100 text-indigo-700 border-indigo-300",
+    canceled: "bg-red-100 text-red-700 border-red-300",
   };
 
-  const deleteOrder = (order) => {
-    setOrders(prev => prev.filter(o => o.id !== order.id));
-    setModalOrder(null);
-  };
+  const totalOrders = orders.length;
+  const statusCounts = orders.reduce((acc, o) => {
+    if (o?.status) acc[o.status] = (acc[o.status] || 0) + 1;
+    return acc;
+  }, {});
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen">
       {/* Sidebar */}
-      <Sidebar active={activeTab} setActive={setActiveTab} />
+      <aside className="fixed top-0 left-0 h-full z-10 w-20 sm:w-24">
+        <Sidebar />
+      </aside>
 
-      {/* Main */}
-      <div className="flex-1 p-6 ml-20">
-        {/* Sticky Header */}
-        <div className="sticky top-0 bg-gray-50 pb-4 z-40">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-xl md:text-2xl font-semibold text-gray-800">
-              Bonali Burger & Pizza Dashboard
-            </h1>
-            <span className="text-sm text-gray-500">Welcome back, Owner</span>
-          </div>
+      {/* Main Content */}
+      <main className="flex-1 ml-20 sm:ml-24 p-4 sm:p-8 bg-gray-100 min-h-screen">
+        <h1 className="text-3xl font-bold mb-8 text-gray-800">Orders Dashboard</h1>
 
-          {/* Tabs */}
-          <div className="flex gap-6 border-b">
-            <button
-              onClick={() => setActiveTab("status")}
-              className={`pb-2 text-sm font-medium transition ${
-                activeTab === "status"
-                  ? "border-b-2 border-red-500 text-gray-900"
-                  : "text-gray-500 hover:text-gray-800"
-              }`}
-            >
-              Orders
-            </button>
-            <button
-              onClick={() => setActiveTab("graph")}
-              className={`pb-2 text-sm font-medium transition ${
-                activeTab === "graph"
-                  ? "border-b-2 border-red-500 text-gray-900"
-                  : "text-gray-500 hover:text-gray-800"
-              }`}
-            >
-              Graphs
-            </button>
+        {/* Summary Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-6 mb-10">
+          <div className="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition">
+            <p className="text-gray-500">Total Orders</p>
+            <p className="text-2xl font-bold">{totalOrders}</p>
           </div>
+          {["pending", "accepted", "preparing", "ready", "picked", "delivered", "canceled"].map(
+            (status) => (
+              <div
+                key={status}
+                className={`p-6 rounded-2xl shadow border hover:shadow-lg transition ${statusColors[status]}`}
+              >
+                <p className="capitalize font-medium">{status}</p>
+                <p className="text-2xl font-bold">{statusCounts[status] || 0}</p>
+              </div>
+            )
+          )}
         </div>
 
-        {/* Content */}
-        {activeTab === "status" && (
-          <OrderStatus
-            orders={orders}
-            grouped={grouped}
-            setModalOrder={setModalOrder}
-            formatBirr={formatBirr}
-          />
-        )}
-        {activeTab === "graph" && <Graphs orders={orders} grouped={grouped} />}
-
-        {/* Modal */}
-        {modalOrder && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-            <div className="bg-white rounded-xl p-6 w-full max-w-xl shadow-lg border border-gray-200">
-              {/* Header */}
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="font-semibold text-lg text-gray-800">
-                  Order #{modalOrder.id}
-                </h2>
-                <button
-                  className="text-gray-400 hover:text-gray-600"
-                  onClick={() => setModalOrder(null)}
-                >
-                  ✕
-                </button>
-              </div>
-
-              {/* Customer Info */}
-              <div className="mb-6">
-                <p className="text-gray-800 font-medium">
-                  {modalOrder.customer}
-                </p>
-                <p className="text-sm text-gray-500">Customer</p>
-              </div>
-
-              {/* Table */}
-              <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden mb-6">
-                <thead className="bg-gray-100 text-gray-700">
-                  <tr>
-                    <th className="p-3 text-left font-medium">Item</th>
-                    <th className="p-3 text-center font-medium">Qty</th>
-                    <th className="p-3 text-right font-medium">Price</th>
-                    <th className="p-3 text-right font-medium">Subtotal</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {modalOrder.items.map((i, idx) => (
-                    <tr
-                      key={idx}
-                      className="border-t hover:bg-gray-50 transition"
-                    >
-                      <td className="p-3">{i.name}</td>
-                      <td className="p-3 text-center">{i.qty}</td>
-                      <td className="p-3 text-right">{formatBirr(i.price)}</td>
-                      <td className="p-3 text-right">{formatBirr(i.qty * i.price)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr className=" font-medium">
-                    <td colSpan={3} className="p-3 text-right">
-                      Total
+        {/* Orders Table */}
+        {loading ? (
+          <p className="text-gray-500">Loading orders...</p>
+        ) : error ? (
+          <p className="text-red-500">⚠️ {error}</p>
+        ) : orders.length === 0 ? (
+          <p className="text-gray-500">No orders found.</p>
+        ) : (
+          <div className="overflow-x-auto bg-white rounded-2xl shadow">
+            <table className="w-full border-collapse">
+              <thead className="bg-gray-200">
+                <tr>
+                  <th className="p-4 text-left text-sm font-semibold text-gray-700">Customer Email</th>
+                  <th className="p-4 text-left text-sm font-semibold text-gray-700">Phone</th>
+                  <th className="p-4 text-left text-sm font-semibold text-gray-700">Total</th>
+                  <th className="p-4 text-left text-sm font-semibold text-gray-700">Status</th>
+                  <th className="p-4 text-left text-sm font-semibold text-gray-700">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map((order) => (
+                  <tr key={order._id} className="border-t hover:bg-gray-50 transition">
+                    <td className="p-4 text-sm">{order.customerId?.email || "Unknown"}</td>
+                    <td className="p-4 text-sm">{order.customerId?.phone || "N/A"}</td>
+                    <td className="p-4 text-sm">{formatBirr(order.total)}</td>
+                    <td className={`p-4 text-sm capitalize font-medium ${statusColors[order.status] || ""}`}>
+                      {order.status}
                     </td>
-                    <td className="p-3 text-right">{formatBirr(modalOrder.total)}</td>
+                    <td className="p-4">
+                      <select
+                        className="w-full p-2 border rounded-lg"
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === "canceled") cancelOrder(order._id);
+                          else updateStatus(order._id, value);
+                        }}
+                        defaultValue=""
+                      >
+                        <option value="" disabled>Select Status</option>
+                        {nextStatuses.map((status) => (
+                          <option key={status} value={status}>
+                            {status.charAt(0).toUpperCase() + status.slice(1)}
+                          </option>
+                        ))}
+                        {order.status !== "canceled" && (
+                          <option value="canceled">Cancel</option>
+                        )}
+                      </select>
+                    </td>
                   </tr>
-                </tfoot>
-              </table>
-
-              {/* Actions */}
-              <div className="flex justify-end gap-3">
-                {modalOrder.status === "pending" && (
-                  <button
-                    className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg text-sm"
-                    onClick={() => updateStatus(modalOrder, "in-progress")}
-                  >
-                    Mark as Preparing
-                  </button>
-                )}
-                {modalOrder.status === "in-progress" && (
-                  <button
-                    className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg text-sm"
-                    onClick={() => updateStatus(modalOrder, "completed")}
-                  >
-                    Mark as Completed
-                  </button>
-                )}
-                <button
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm"
-                  onClick={() => deleteOrder(modalOrder)}
-                >
-                  Delete Order
-                </button>
-              </div>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }
