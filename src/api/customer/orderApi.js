@@ -1,6 +1,4 @@
-const API_URL =
-  process.env.REACT_APP_API_URL ||
-  "https://real-time-food-delivery.onrender.com/api/delivery";
+const API_URL = process.env.REACT_APP_API_URL || "https://real-time-food-delivery.onrender.com/api/delivery";
 
 export const createOrder = async (orderData) => {
   const response = await fetch(`${API_URL}/orders`, {
@@ -21,13 +19,10 @@ export const createOrder = async (orderData) => {
 };
 
 export const getOrderHistory = async (page = 1, limit = 10) => {
-  const response = await fetch(
-    `${API_URL}/orders/all?page=${page}&limit=${limit}`,
-    {
-      method: "GET",
-      credentials: "include", // This sends HttpOnly cookies automatically
-    }
-  );
+  const response = await fetch(`${API_URL}/orders/all?page=${page}&limit=${limit}`, {
+    method: "GET",
+    credentials: "include", // This sends HttpOnly cookies automatically
+  });
 
   if (!response.ok) {
     const errorData = await response.json();
